@@ -1,5 +1,5 @@
 {
-	"policies": [{
+	"policies": {
 		"id": "id1",
 		"rules": [{
 				"action": "stop",
@@ -30,5 +30,5 @@
 				]
 			}
 		]
-	}]
+	}
 }

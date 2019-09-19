@@ -20,7 +20,7 @@ node {
     }
     
     stage('Lint') {
-        def result = processServices(stackYaml, policy)
+        def result = processServices(stackYaml, lintingRules)
         if (!result) {
             println "Overall validation of stack manifest failed"
         }

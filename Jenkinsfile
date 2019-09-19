@@ -4,6 +4,10 @@ def stackYaml
 node {
     stage("Checkout") {
       checkout scm
+      sh """
+        pwd
+        ls -ltraR
+      """
     }
     
     stage("test linter") {

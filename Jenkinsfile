@@ -11,74 +11,95 @@ node {
     }
     
     stage("test linter") {
-        lintingRules = readJSON text: '''
-    {
-        "id": "default_bundle",
-        "policies": [
-            {
-                "comment": "Single policy for performing vulnerability checks, dockerfiles checks, and some container image best practice checks.", 
-                "id": "48e6f7d6-1765-11e8-b5f9-8b6f228548b6", 
-                "name": "Default Policy",
-                "version": "1_0", 
-                "rules": [
-                    {
-                        "action": "STOP", 
-                        "gate": "metadata", 
-                        "params": [
-                            {
-                                "name": "attribute", 
-                                "value": "deploy.resources.limits.cpus"
-                            }, 
-                            {
-                                "name": "check", 
-                                "value": "not_exists"
-                            }
-                        ], 
-                        "trigger": "attribute"
-                    },
-                    {
-                        "action": "WARN", 
-                        "gate": "metadata", 
-                        "params": [
-                            {
-                                "name": "attribute", 
-                                "value": "deploy.resources.limits.cpus"
-                            }, 
-                            {
-                                "name": "check", 
-                                "value": ">"
-                            }, 
-                            {
-                                "name": "value", 
-                                "value": "1"
-                            }
-                        ], 
-                        "trigger": "attribute"
-                    }
-                ],
-            }
-        ],
-    }
-    '''
+        lintingRules = readJSON file: 'sample-policy.json'
     
-    println lintingRules
+        println lintingRules
     
-    stackYaml = readYaml file: 'sample-stack.yml'
-    println stackYaml
+        stackYaml = readYaml file: 'sample-stack.yml'
+        println stackYaml
     }
     
     stage('Lint') {
-    
-        for(svc in stackYaml.services) {
-            println svc
-            processLinting(svc)
+        def result = processServices(stackYaml, policy)
+        if (!result) {
+            println "Overall validation of stack manifest failed"
         }
     }
 }
 
-def processLinting(svc) {
+@NonCPS
+def processServices(serviceList, policy) {
+  def overallResult = true
+  
+  serviceList.services.each {svc ->
+    println "Processing service: ${svc.key}"
+    
+    
+  	def result = processLinting(svc, policy)
+    if (!result) {
+      overallResult = false
+    }
+  }
+  
+  return overallResult
+}
 
-    for(rule in lintingRules.policies.rules) {
-        println rule
+@NonCPS
+def processLinting(svc, policy) {
+  def svcRuleResult = []
+  def overallResult = true
+  
+  def shell = new GroovyShell( new Binding( [svc:svc].withDefault{ it } ) )
+
+  policy.policies.rules.each { rule ->
+    def result = processRule(rule)
+    def command = "if (svc.getAt(\"value\").${result}) {return true} else {return false}"
+    //println "Rule that will be executed: $command"
+    //println svc.getAt('value').${result}
+    def myRes = shell.evaluate( command )
+    //println "Rule evaluated to: $myRes"
+    
+    if (!myRes) {
+      svcRuleResult.add("${result}")
+    }
+  }
+  
+  if (svcRuleResult) {
+    println "Service ${svc.key} failed rule validation: \n   Failed rules: ${svcRuleResult}"
+    overallResult = false
+  }
+  
+  return overallResult
+}
+
+@NonCPS
+def processRule(rule) {
+    def attribute = ""
+    def check = ""
+    def value = ""
+  
+  	// println "Processing rule: $rule"
+
+    rule.params.each { param ->
+        // println "Processing param: $param"
+        switch ("${param.name}") {
+            case "attribute":
+                attribute = param.value
+                break
+            case "check":
+                check = param.value
+                break
+            case "value":
+                value = param.value
+                break
+        }
+    }      
+      
+    if (check.equals("not-exists")) {
+        return "!${attribute}"
+    } else if (check.equals("exists")) {
+        return "${attribute}"
+    } else {
+    	return "${attribute} ${check} ${value}"
     }
 }

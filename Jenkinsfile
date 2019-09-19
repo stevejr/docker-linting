@@ -78,10 +78,10 @@ def processRule(rule) {
     def check = ""
     def value = ""
   
-  	// println "Processing rule: $rule"
+  	println "Processing rule: $rule"
 
     rule.params.each { param ->
-        // println "Processing param: $param"
+        println "Processing param: $param"
         switch ("${param.name}") {
             case "attribute":
                 attribute = param.value

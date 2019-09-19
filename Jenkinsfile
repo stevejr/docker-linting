@@ -54,7 +54,7 @@ def processLinting(svc, policy) {
   policy.policies.rules.each { rule ->
     def result = processRule(rule)
     def command = "if (svc.getAt(\"value\").${result}) {return true} else {return false}"
-    //println "Rule that will be executed: $command"
+    println "Rule that will be executed: $command"
     //println svc.getAt('value').${result}
     def myRes = shell.evaluate( command )
     //println "Rule evaluated to: $myRes"

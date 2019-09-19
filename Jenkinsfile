@@ -23,6 +23,7 @@ node {
         def result = processServices(stackYaml, lintingRules)
         if (!result) {
             println "Overall validation of stack manifest failed"
+            currentBuild.result = 'FAILURE'
         }
     }
 }

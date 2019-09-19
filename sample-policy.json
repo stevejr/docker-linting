@@ -5,7 +5,7 @@
 				"action": "stop",
 				"params": [{
 						"name": "attribute",
-						"value": "deploy.resources.limits.cpus"
+						"value": "deploy?.resources?.limits?.cpus"
 					},
 					{
 						"name": "check",
@@ -21,7 +21,7 @@
 				"action": "stop",
 				"params": [{
 						"name": "attribute",
-						"value": "deploy.resources.limits.cpus"
+						"value": "deploy?.resources?.limits?.cpus"
 					},
 					{
 						"name": "check",

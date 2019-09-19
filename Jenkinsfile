@@ -6,7 +6,7 @@ node {
       checkout scm
       sh """
         pwd
-        ls -ltraR
+        ls -ltra
       """
     }
     

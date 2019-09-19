@@ -63,7 +63,7 @@ node {
     
     println lintingRules
     
-    stackYaml = readYaml file: sample-stack.yml
+    stackYaml = readYaml file: 'sample-stack.yml'
     println stackYaml
     }
     

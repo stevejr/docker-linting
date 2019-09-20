@@ -49,13 +49,23 @@ def processLinting(svc, policy) {
 
   policy.policies.rules.each { rule ->
     def ruleToAction = processRule(rule)
-    def command = "if (svc.getAt(\"value\")?.${ruleToAction}) {return true} else {return false}"
-    println "DEBUG: processLinting - Rule that will be executed: $command"
     
-    def myRes = shell.evaluate( command )
-    println "DEBUG: processLinting - Rule evaluated to: $myRes"
+//    def command = "if (svc.getAt(\"value\")?.${ruleToAction}) {return true} else {return false}"
+//    println "DEBUG: processLinting - Rule that will be executed: $command"
     
-    if (!myRes) {
+//    def myRes = shell.evaluate( command )
+//    println "DEBUG: processLinting - Rule that will be executed: $command"
+    
+//    def myRes = shell.evaluate( command )
+//    println "DEBUG: processLinting - Rule evaluated to: $myRes"
+
+//    println "DEBUG: processLinting - Rule evaluated to: $myRes"
+    
+//    if (!myRes) {
+//      svcRuleResult.add(["svc": "${svc.key}", "rule": "${ruleToAction}", "result": "${myRes}"])
+//    }
+
+    if (!evalProperty(svc.getAt(\"value\")?.${ruleToAction})) {
       svcRuleResult.add(["svc": "${svc.key}", "rule": "${ruleToAction}", "result": "${myRes}"])
     }
   }
@@ -64,6 +74,7 @@ def processLinting(svc, policy) {
     println "DEBUG: processLinting - Service ${res.svc} failed rule validation: \n   Failed Command: ${res.rule}"
     overallResult = false
   }
+                                
   return svcRuleResult
 }
 
@@ -95,4 +106,9 @@ def processRule(rule) {
   } else {
     return "${attribute} ${check} ${value}"
   }
+}
+
+@NonCPS
+def evalProperty(object, String property) {
+  Eval.x(object, 'x.' + property)
 }

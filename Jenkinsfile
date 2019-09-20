@@ -33,7 +33,9 @@ def processServices(serviceList, policy) {
     println "DEBUG: processServices - Processing service: ${svc.key}"
     
   	def result = processLinting(svc, policy)
-    overallResult.add(result)
+    if (result.size() > 0) {
+      overallResult.add(result)
+    }
     println "DEBUG: processServices - overallResult contents: ${overallResult}"
   }
   

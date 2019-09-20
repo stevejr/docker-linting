@@ -65,7 +65,7 @@ def processLinting(svc, policy) {
 //      svcRuleResult.add(["svc": "${svc.key}", "rule": "${ruleToAction}", "result": "${myRes}"])
 //    }
 
-    if (!evalProperty(svc.getAt(\"value\")?.${ruleToAction})) {
+    if (!evalProperty(svc.getAt('value')?.${ruleToAction})) {
       svcRuleResult.add(["svc": "${svc.key}", "rule": "${ruleToAction}", "result": "${myRes}"])
     }
   }

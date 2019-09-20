@@ -11,10 +11,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: 0.50
           memory: 50M
         reservations:
-          cpus: '0.25'
+          cpus: 0.25
           memory: 20M
 
   # A PostgreSQL database for persistent storage

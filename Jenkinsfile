@@ -21,8 +21,8 @@ node {
     
     stage('Lint') {
         def result = processServices(stackYaml, lintingRules)
-        if (!result) {
-            println "Overall validation of stack manifest failed"
+        if (result.len > 0) {
+            println "Overall validation of stack manifest failed: ${result}"
             currentBuild.result = 'FAILURE'
         }
     }
@@ -30,16 +30,14 @@ node {
 
 @NonCPS
 def processServices(serviceList, policy) {
-  def overallResult = true
+  def overallResult = []
   
   serviceList.services.each {svc ->
     println "Processing service: ${svc.key}"
     
     
   	def result = processLinting(svc, policy)
-    if (!result) {
-      overallResult = false
-    }
+    overallResult.add(result)
   }
   
   return overallResult
@@ -53,24 +51,22 @@ def processLinting(svc, policy) {
   def shell = new GroovyShell( new Binding( [svc:svc].withDefault{ it } ) )
 
   policy.policies.rules.each { rule ->
-    def result = processRule(rule)
-    def command = "if (svc.getAt(\"value\")?.${result}) {return true} else {return false}"
+    def ruleToAction = processRule(rule)
+    def command = "if (svc.getAt(\"value\")?.${ruleToAction}) {return true} else {return false}"
     println "Rule that will be executed: $command"
-    //println svc.getAt('value').${result}
     def myRes = shell.evaluate( command )
     //println "Rule evaluated to: $myRes"
     
     if (!myRes) {
-      svcRuleResult.add("${result}")
+      svcRuleResult.add(["svc": "${svc.key}", "rule": "${ruleToAction}", "result": "${myRes}")
     }
   }
   
-  if (svcRuleResult) {
-    println "Service ${svc.key} failed rule validation: \n   Failed rules: ${svcRuleResult}"
+  svcRuleResult.each { res -> 
+    println "Service ${res.svc} failed rule validation: \n   Failed Command: ${res.rule}"
     overallResult = false
   }
-  
-  return overallResult
+  return svcRuleResult
 }
 
 @NonCPS
@@ -96,9 +92,7 @@ def processRule(rule) {
         }
     }      
       
-    if (check.equals("not-exists")) {
-        return "!${attribute}"
-    } else if (check.equals("exists")) {
+    if (check.equals("exists")) {
         return "${attribute}"
     } else {
     	return "${attribute} ${check} ${value}"
